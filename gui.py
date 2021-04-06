@@ -3,7 +3,7 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PySide6.QtCore import QLine, Signal, Qt, QObject, QThread, QUrl, QSize
+from PySide6.QtCore import Signal, Qt, QObject, QThread, QUrl, QSize
 from PySide6.QtGui import QDesktopServices, QPixmap, QMovie
 from PySide6.QtWidgets import QApplication, QFormLayout, QLabel, QLineEdit, QMainWindow, QFileDialog, QPushButton, QWidget
 import tensorflow as tf
