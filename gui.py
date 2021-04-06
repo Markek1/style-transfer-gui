@@ -65,7 +65,7 @@ class Image():
 
         self.path = os.path.abspath(self.path).replace('\\', '/')
         self.image = plt.imread(self.path)
-        self.original_res = self.image.shape[:-1]
+        self.original_res = (self.image.shape[1], self.image.shape[0])
         self.image = self.image.astype(np.float32)[np.newaxis, ...] / 255.
         if self.type == 'content':
             self.res = DEFAULT_CONTENT_RESOLUTION
@@ -77,7 +77,6 @@ class Image():
             self.b_resize.show()
 
         self.pixmap = QPixmap(self.path)
-        self.shape = self.image.shape
         self.l_img.setPixmap(self.pixmap)
 
         self.l_img.mousePressEvent = lambda _: QDesktopServices.openUrl(QUrl(self.path, QUrl.TolerantMode))
@@ -85,9 +84,11 @@ class Image():
         if self.window.content_image.image is not None and self.window.style_image.image is not None and not self.window.generating:
             self.window.b_generate.setEnabled(True)
 
-    def resize_image(self, x, y):
-        self.image = tf.image.resize(self.image, (x, y))
-        self.res = (x, y)
+    def resize_image(self, y, x):
+        image = plt.imread(self.path)
+        image = image.astype(np.float32)[np.newaxis, ...] / 255.
+        self.image = tf.image.resize(image, (y, x))
+        self.res = (y, x)
         self.l_res.setText(f'{x}x{y}')
 
     def open_resizing_window(self):
@@ -120,7 +121,7 @@ class ResizeImageWindow(QWidget):
         self.setLayout(self.layout)
 
     def resize_image(self):
-        self.image.res = (int(self.x_value.text()), int(self.y_value.text()))
+        self.image.res = (int(self.y_value.text()), int(self.x_value.text()))
         self.image.resize_image(*self.image.res)
 
 class MainWindow(QMainWindow):

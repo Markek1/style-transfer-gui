@@ -1,13 +1,11 @@
 import os
 
-import numpy as np
 import tensorflow as tf
 
 def magenta_v1_256_2(content_image, style_image, resize=False, content_res=None, style_res=None):
     '''Resolution of generated image = resolution of content image.
        Resolution of the style image is 256x256 by default because the net
        was trained on it and it generally works best'''
-
     if resize:
         if content_res:
             content_image = tf.image.resize(content_image, content_res)
