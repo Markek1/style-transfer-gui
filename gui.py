@@ -22,7 +22,7 @@ class Worker(QObject):
     finished = Signal()
 
     def run(self):
-        save_path = 'outputs/tmp.png'
+        save_path = 'outputs/.tmp.png'
         image = self.window.model(*self.args, **self.kwargs)
         if not os.path.exists('outputs/'):
             os.mkdir('outputs')
@@ -57,7 +57,7 @@ class Image():
 
     def open_image(self, path=None):
         if not path:
-            self.path = QFileDialog.getOpenFileName(self.window, self.window.tr('Open File'), filter=self.window.tr("Image Files (*.png *.jpg *.bmp)"))[0]
+            self.path = QFileDialog.getOpenFileName(self.window, 'Open File', filter=self.window.tr("Image Files (*.png *.jpg *.bmp)"))[0]
             if self.path == '':
                 return
         else:
@@ -111,6 +111,7 @@ class ResizeImageWindow(QWidget):
         self.b_confirm = QPushButton()
         self.b_confirm.setText('Confirm')
         self.b_confirm.clicked.connect(self.resize_image)
+        self.b_confirm.clicked.connect(self.close)
 
         self.layout.addRow(QLabel(f'Original size: {self.image.original_res[0]}x{self.image.original_res[1]}'))
         self.layout.addRow(QLabel('X:'), self.x_value)
@@ -158,6 +159,11 @@ class MainWindow(QMainWindow):
         self.b_generate.clicked.connect(self.generate)
         self.b_generate.setEnabled(False)
 
+        self.b_save_generated = QPushButton(self)
+        self.b_save_generated.setText('Save as...')
+        self.b_save_generated.clicked.connect(self.save_generated)
+        self.b_save_generated.setEnabled(False)
+
         self.l_content = ImageLabel(self, 'Content Image')
         self.l_style = ImageLabel(self, 'Style Image')
         self.l_generated = ImageLabel(self, '')
@@ -180,6 +186,10 @@ class MainWindow(QMainWindow):
 
         self.model = magenta_v1_256_2
 
+    def save_generated(self):
+        path = QFileDialog.getSaveFileName(self, 'Save File',  'outputs', filter='PNG (*.png)')[0]
+        tf.keras.preprocessing.image.save_img(path, tf.squeeze(self.generated_image.image))
+
     def start_animation(self):
         self.l_loading.show()
         self.loading_animation.start()
@@ -197,6 +207,7 @@ class MainWindow(QMainWindow):
         self.stop_animation()
         self.generating = False
         self.b_generate.setEnabled(True)
+        self.b_save_generated.setEnabled(True)
 
     def generate(self):
         self.handle_start_generating()
@@ -261,9 +272,13 @@ class MainWindow(QMainWindow):
         output_img_size = min((height - B_IMG_height - B_HEIGHT),
                                   width)
         self.b_generate.setGeometry(x, y, B_WIDTH, B_HEIGHT)
+
         tmp_x = x + B_WIDTH + B_B_width
         self.l_loading.setGeometry(tmp_x, y, B_HEIGHT, B_HEIGHT)
         self.loading_animation.setScaledSize(QSize(B_HEIGHT, B_HEIGHT))
+
+        tmp_x += B_HEIGHT + B_B_width
+        self.b_save_generated.setGeometry(tmp_x, y, B_WIDTH, B_HEIGHT)
 
         tmp_y = y + B_HEIGHT + B_B_height
         self.l_generated.setGeometry(x, tmp_y, output_img_size, output_img_size)
